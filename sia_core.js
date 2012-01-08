@@ -397,10 +397,6 @@ var SiaCore = function (opts) {
 				}
 				return;
 			}
-			if (spokentext.match(/^ you (\w\s)* please/i)) {
-				bot.speak('sorry :(');
-				return;
-			}
 			if (matches = spokentext.match(/^ harass (.*)/i)) {
 				var name = matches[1];
 				sayings = [
@@ -412,6 +408,15 @@ var SiaCore = function (opts) {
 					'I look into '+name+'\'s eyes and get the feeling someone else is driving.',
 					'There\'s nothing wrong with '+name+' that reincarnation won\'t cure.',
 					'You\'re a good example of why some animals eat their young '+name+'.'
+				];
+				bot.speakRand(sayings);
+				return;
+			}
+			
+			if (spokentext.match(/^ why does everything smell like lilacs/i)) {
+				sayings = [
+					'Ever mix ammonia and bleach?',
+					'Für ihr Gesicht!'
 				];
 				bot.speakRand(sayings);
 				return;
