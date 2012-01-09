@@ -14,6 +14,6 @@
 
 ## Documentation
 
-	requires a few not packages
+	requires a few node packages
 	* npm install ttapi
 	* npm install lastfm
