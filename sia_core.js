@@ -300,6 +300,23 @@ var SiaCore = function (opts) {
 				});
 				return;
 			}
+			//unsave song
+			 if (spokentext.match(/^ (remove this|drop song|remove song)/i)) {
+                                bot.roomInfo(true, function(data) {
+                                        var currentSong = data.room.metadata.current_song._id;
+                                        bot.playlistRemove(currentSong);
+                                        sayings = [
+                                                'Got it!',
+                                                'Removed song.',
+                                                'Recorded.',
+                                                'Aww less songs!',
+                                                'All my hearts no longer belong to this.'
+                                        ];
+                                        bot.speakRand(sayings);
+                                });
+                                return;
+                        }
+
 			//auto skip
 			if (spokentext.match(/^ auto\s?skip/i)) {
 
