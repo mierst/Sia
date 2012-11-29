@@ -8,7 +8,7 @@ var LastFmNode = require('lastfm').LastFmNode;
 var Bot = require('ttapi');
 var bot;
 
-var SiaCore = function (opts) {
+var SiaCore = function (opts, permissions, importantUsers) {
 	var self = this,
 		lastfm,
 		usersList = { },
@@ -232,6 +232,7 @@ var SiaCore = function (opts) {
 			if(!data.text.match(new RegExp('^'+opts.details.bot_name,'i')))
 				return;
 			var spokentext = data.text.substring(opts.details.bot_name.length);
+			var speakerId = data.userid;
 			
 			//version
 			if (spokentext == ' version') {
@@ -264,7 +265,9 @@ var SiaCore = function (opts) {
 			//=== voting commands ===
 			//vote up
 			if (spokentext.match(/^ (bob|dance|party|rock|vote)/i)) {
-				bot.vote('up');
+				if ( permissionCheck(speakerId, 'vote' ) ) {
+					bot.vote('up');
+				}
 				return;
 			}
 
@@ -644,6 +647,22 @@ var SiaCore = function (opts) {
 			currentSong.artist = data.room.metadata.current_song.metadata.artist;
 		});
 	}
+
+	var permissionCheck = function ( speakerId, command ) {
+
+		if ( !importantUsers[speakerId] )
+			return;
+		speaker = importantUsers[speakerId];
+		if ( !speaker.roles )
+			return;
+		if ( !permissions[command] ) 
+			return;
+		for (var i in speaker.roles) {
+			if ( permissions[command].indexOf(speaker.roles[i]) !== -1 )
+				return true;
+		}
+		return;
+	};
 	
 	init(opts);
 };

@@ -30,4 +30,16 @@ var options = {
 	}
 };
 
-var sia = require('./sia_core').SiaCore(options);
+var permissions = {
+        add : ['mod'],
+        remove : ['mod'],
+        vote : ['mod'],
+        skip : ['mod'],
+        boot : ['mod'],
+}
+
+var importantUsers = {
+                'userId': {name:'@username', roles:['mod']},
+}
+
+var sia = require('./sia_core').SiaCore(options, permissions, importantUsers);
