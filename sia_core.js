@@ -191,10 +191,10 @@ var SiaCore = function (opts, permissions, importantUsers) {
 			if(currentSong.name != '') {
 				if(!opts.settings.silence && !(opts.settings.autoskip && currentSong.djid == opts.details.userid)) {
 					bot.speak('Last Played: "'+currentSong.name+'" by '+currentSong.artist+' | '
-						+currentSong.votes.up+'â–² '
-						+currentSong.votes.down+'â–¼ '
-						+currentSong.listeners+'â™« '
-						+currentSong.adds+'â™¥');
+						+currentSong.votes.up+'▲ '
+						+currentSong.votes.down+'▼ '
+						+currentSong.listeners+'♫ '
+						+currentSong.adds+'♥');
 				}
 			}
 		});
