@@ -8,6 +8,7 @@ var LastFmNode = require('lastfm').LastFmNode;
 var Bot = require('ttapi');
 var bot;
 
+
 var SiaCore = function (opts, permissions, importantUsers) {
 	var self = this,
 		lastfm,
@@ -28,6 +29,7 @@ var SiaCore = function (opts, permissions, importantUsers) {
 	var init = function() {
 		bot = new Bot(opts.turntable.authid, opts.turntable.userid, opts.turntable.roomid);
 		bot.listen(opts.turntable.port, opts.turntable.host);
+		bot.debug = false;
 		
 		lastfm = new LastFmNode({
 		  api_key: opts.lastfm.apikey,
@@ -166,6 +168,12 @@ var SiaCore = function (opts, permissions, importantUsers) {
 					Math.floor(Math.random() * 60)*1000+1
 				)
 			}
+			// Put everything on your playist
+			if(opts.settings.autorecord) {
+				// XXX: Skip if this is the bot itself
+				bot.speak('I should probably record this song. "' + currentSong.name + '"');
+				recordSong(false);
+			}
 		});
 		
 		bot.on('endsong', function () {
@@ -183,10 +191,10 @@ var SiaCore = function (opts, permissions, importantUsers) {
 			if(currentSong.name != '') {
 				if(!opts.settings.silence && !(opts.settings.autoskip && currentSong.djid == opts.details.userid)) {
 					bot.speak('Last Played: "'+currentSong.name+'" by '+currentSong.artist+' | '
-						+currentSong.votes.up+'▲ '
-						+currentSong.votes.down+'▼ '
-						+currentSong.listeners+'♫ '
-						+currentSong.adds+'♥');
+						+currentSong.votes.up+'â–² '
+						+currentSong.votes.down+'â–¼ '
+						+currentSong.listeners+'â™« '
+						+currentSong.adds+'â™¥');
 				}
 			}
 		});
@@ -289,18 +297,7 @@ var SiaCore = function (opts, permissions, importantUsers) {
 			}
 			//save song
 			if (spokentext.match(/^ (remember this|add song|save song)/i)) {
-				bot.roomInfo(true, function(data) {
-					var newSong = data.room.metadata.current_song._id;
-					bot.playlistAdd(newSong);
-					sayings = [
-						'Got it!',
-						'Added song.',
-						'Recorded.',
-						'Yay more songs!',
-						'All my hearts are belong to this.'
-					];
-					bot.speakRand(sayings);
-				});
+				recordSong();
 				return;
 			}
 			//unsave song
@@ -436,7 +433,7 @@ var SiaCore = function (opts, permissions, importantUsers) {
 			if (spokentext.match(/^ why does everything smell like lilacs/i)) {
 				sayings = [
 					'Ever mix ammonia and bleach?',
-					'Für ihr Gesicht!'
+					'FÃ¼r ihr Gesicht!'
 				];
 				bot.speakRand(sayings);
 				return;
@@ -664,6 +661,31 @@ var SiaCore = function (opts, permissions, importantUsers) {
 		return;
 	};
 	
+	var recordSong = function( saySomething ) {
+
+		// Find out if they want us to actually talk (some people prefer silence)
+		saySomething = typeof saySomething !== 'undefined' ? false : true;
+
+		bot.roomInfo(true, function(data) {
+			var newSong = data.room.metadata.current_song._id;
+			bot.playlistAll(function(playlist) {
+				// Use the length so that it gets added to the end of the list.
+				bot.playlistAdd(newSong, playlist.list.length); 
+				bot.snag(); // This adds the heart you see on the interface			
+			});
+			sayings = [
+				'Got it!',
+				'Added song.',
+				'Recorded.',
+				'Yay more songs!',
+				'All my hearts are belong to this.'
+			];
+			if(saySomething) {
+				bot.speakRand(sayings);
+			}
+		});
+	}
+
 	init(opts);
 };
 

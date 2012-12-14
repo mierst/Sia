@@ -26,6 +26,7 @@ var options = {
 	settings : {
 		autobop  : true,
 		autoskip : false,
+		autorecord : false, // will add every song to the playlist
 		silence  : false
 	}
 };
