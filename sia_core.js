@@ -170,9 +170,11 @@ var SiaCore = function (opts, permissions, importantUsers) {
 			}
 			// Put everything on your playist
 			if(opts.settings.autorecord) {
-				// XXX: Skip if this is the bot itself
-				bot.speak('I should probably record this song. "' + currentSong.name + '"');
-				recordSong(false);
+				// Don't record a song that we're playing, that's just silly
+				if (currentSong.djid != opts.turntable.userid){
+					bot.speak('Adding "' + currentSong.name + '" by '+currentSong.artist+' to my playlist.');
+					recordSong(false);
+				}
 			}
 		});
 		
@@ -201,6 +203,8 @@ var SiaCore = function (opts, permissions, importantUsers) {
 	}
 	
 	var initChatEvents = function() {
+		//XXX functionalize everything under here to work via PM
+		//XXX: https://github.com/alaingilbert/Turntable-API/blob/master/turntable_data/pmmed.js
 		bot.on('speak', function (data) {
 			if(data.name == opts.details.bot_name)
 				return;
@@ -296,12 +300,12 @@ var SiaCore = function (opts, permissions, importantUsers) {
 				return;
 			}
 			//save song
-			if (spokentext.match(/^ (remember this|add song|save song)/i)) {
+			if (spokentext.match(/^ (remember|remember this|add song|save song)/i)) {
 				recordSong();
 				return;
 			}
 			//unsave song
-			 if (spokentext.match(/^ (remove this|drop song|remove song)/i)) {
+			 if (spokentext.match(/^ (forget|remove this|drop song|remove song)/i)) {
                                 bot.roomInfo(true, function(data) {
                                         var currentSong = data.room.metadata.current_song._id;
                                         bot.playlistRemove(currentSong);
@@ -347,6 +351,33 @@ var SiaCore = function (opts, permissions, importantUsers) {
 				return;
 			}
 			
+			//auto record 
+			if (spokentext.match(/^ auto\s?record/i)) {
+
+				if(spokentext.match(/auto\s?record on/i))
+					opts.settings.autorecord = true;
+				else if (spokentext.match(/auto\s?record off/i))
+					opts.settings.autorecord = false;
+
+				sayings = [
+					'autorecord is '+(opts.settings.autorecord ? 'on.' : 'off.')
+				];
+				bot.speakRand(sayings);
+				return;
+			}
+			
+			//What's up next on your playlist?
+			if (spokentext.match(/^ what's next/i)) {
+				nextSong();
+				return;
+			}
+
+			//Help! PM usere with what commands the bot has
+			if (spokentext.match(/^ (help|commands)/i)) {
+				bot.speak('Worry not, '+data.name+'! Help is on the way!');
+				bot.pm('Sup?',data.userid);
+			}
+			
 			//=== admin commands ===
 			//drop a user after their song
 			if (spokentext.match(/^ drop me after my song/i)) {
@@ -388,10 +419,10 @@ var SiaCore = function (opts, permissions, importantUsers) {
 				bot.speakRand(sayings);
 				return;
 			}
-			if (matches = spokentext.match(/^ change your avatar to ([^\s]*)$/i)) {
-				bot.setAvatar(matches[1]);
+			if (matches = spokentext.match(/^ (avatar|change your avatar to) ([^\s]*)$/i)) {
+				bot.setAvatar(matches[2]);
 				sayings = [
-					'Changing my avatar to #'+matches[1]+'.'
+					'Changing my avatar to #'+matches[2]+'.'
 				];
 				bot.speakRand(sayings);
 				return;
@@ -660,6 +691,12 @@ var SiaCore = function (opts, permissions, importantUsers) {
 		}
 		return;
 	};
+
+	var nextSong = function () {
+		bot.playlistAll(function(playlist) {
+			bot.speak('Up next is '+playlist.list[0].metadata['song']+' by '+playlist.list[0].metadata['artist']+'.');
+		});
+	}
 	
 	var recordSong = function( saySomething ) {
 
